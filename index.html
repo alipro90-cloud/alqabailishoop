@@ -8,7 +8,7 @@
 <style>
 :root{
   --bg:#e9eae6; --paper:#f8f8f5; --ink:#1f2a30; --mute:#66727a;
-  --main:#1d4e5f; --main-ink:#fff; --due:#b5442e; --ok:#2f7a4f; --line:#cfd2cc;
+  --main:#1d4e5f; --main-ink:#fff; --due:#b5442e; --ok:#2f7a4f; --line:#cfd2cc; --gray:#d9dbd6; --grid:#8d948f;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);
@@ -33,9 +33,10 @@ button:focus-visible{outline:3px solid #7fb0c0}
 .btn.full{width:100%}
 .head2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .line{background:var(--paper);border:1.5px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px}
-.row3{display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:8px;margin-top:8px;align-items:end}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.vline{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px;color:var(--mute)}
+.vline b{font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
 .val{font-size:13px;color:var(--mute)}
-.val b{display:block;font-size:18px;color:var(--ink);padding:9px 2px;font-variant-numeric:tabular-nums}
 .x{background:none;color:var(--due);min-height:36px;padding:0;margin-top:6px;font-size:14px}
 .totals{background:var(--paper);border:1.5px solid var(--ink);border-radius:10px;padding:12px;margin:14px 0}
 .totals .r{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:16px}
@@ -50,23 +51,33 @@ button:focus-visible{outline:3px solid #7fb0c0}
 .sum{display:flex;justify-content:space-between;background:var(--main);color:#fff;border-radius:10px;padding:12px;margin-bottom:12px}
 .empty{text-align:center;color:var(--mute);padding:36px 12px}
 nav{position:fixed;bottom:0;inset-inline:0;background:var(--paper);border-top:1.5px solid var(--line);
-  display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:6}
+  display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding-bottom:env(safe-area-inset-bottom);z-index:6}
 nav button{background:none;color:var(--mute);border-radius:0;min-height:58px;font-size:13.5px;padding:0 2px}
 nav button.on{color:var(--main);font-weight:700;box-shadow:inset 0 3px 0 var(--main)}
 .modal{position:fixed;inset:0;background:rgba(20,28,32,.55);z-index:20;display:none;overflow:auto;padding:14px}
 .modal.on{display:block}
-.sheet{background:var(--paper);max-width:560px;margin:0 auto;border-radius:12px;padding:16px}
+
+/* ---------- شكل الفاتورة ---------- */
+.sheet{background:var(--paper);max-width:600px;margin:0 auto;border-radius:12px;padding:16px;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
 .sheet .shop{text-align:center;font-size:21px;font-weight:700;color:var(--main);padding-bottom:8px;margin-bottom:8px;border-bottom:2px solid var(--main)}
 .sheet .meta{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start;margin:6px 0 10px;font-size:13.5px;line-height:1.7}
 .sheet .m-r{text-align:right}
 .sheet .m-c{text-align:center;font-weight:700;font-size:16.5px;white-space:nowrap}
-.sheet .m-l{text-align:left}
+.sheet .m-l{text-align:left;font-variant-numeric:tabular-nums}
+.tbl{width:100%;border-collapse:collapse;margin:10px 0;font-size:14.5px;border:1.5px solid var(--ink)}
+.tbl th,.tbl td{border:1px solid var(--grid);padding:6px 5px;text-align:right;vertical-align:middle}
+.tbl thead th{background:var(--gray);font-size:12.5px;line-height:1.35;font-weight:700}
+.tbl thead th small{display:block;font-weight:400;color:var(--mute);font-size:10.5px;direction:ltr}
+.tbl td.c,.tbl th.c{text-align:center}
+.tbl td.n,.tbl th.n{text-align:left;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl tfoot td{background:var(--gray);font-weight:700;font-size:15.5px}
+.sumrow{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--ink);border-radius:8px;overflow:hidden;margin:8px 0}
+.sumrow div{padding:8px 6px;text-align:center;font-size:12.5px;color:var(--mute);border-inline-start:1px solid var(--grid)}
+.sumrow div:first-child{border-inline-start:0}
+.sumrow b{display:block;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:2px}
 .sheet .foot{margin-top:12px;padding-top:10px;border-top:2px solid var(--main);text-align:center;font-size:14px;line-height:1.9}
 .sheet .foot .addr{font-weight:700;color:var(--main)}
-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:15px}
-th,td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right}
-th{font-size:12.5px;color:var(--mute);font-weight:600}
-td.n,th.n{text-align:left;font-variant-numeric:tabular-nums}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .keyrow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px}
@@ -79,21 +90,84 @@ td.n,th.n{text-align:left;font-variant-numeric:tabular-nums}
 .box input{margin-bottom:8px}
 #toast{position:fixed;bottom:76px;inset-inline:0;margin:auto;width:max-content;max-width:90%;
   background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;z-index:30;display:none}
+
+/* ---------- الدخول والصلاحيات ---------- */
+[hidden]{display:none!important}
+body.locked header,body.locked main,body.locked nav,body.locked #modal{display:none!important}
+body:not(.locked) .gate{display:none}
+.is-user .adm{display:none!important}
+.gate{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.gate-card{background:var(--paper);border:1.5px solid var(--line);border-radius:14px;padding:22px 18px;width:100%;max-width:380px}
+.gate-shop{text-align:center;font-size:21px;font-weight:700;color:var(--main);padding-bottom:10px;margin-bottom:12px;border-bottom:2px solid var(--main)}
+.gate h2{margin:0 0 12px;font-size:17px;text-align:center}
+.g-err{color:var(--due);font-size:13.5px;min-height:20px;margin:6px 0}
+.g-link{background:none;color:var(--main);width:100%;margin-top:6px;font-size:14px;min-height:40px}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink);margin:10px 0 2px}
+.chk input{width:20px;height:20px;min-height:0;padding:0;margin:0}
+.out{position:absolute;inset-inline-end:10px;top:12px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6);min-height:32px;padding:0 10px;font-size:13px;border-radius:6px}
+@media print{.gate{display:none!important}}
 @media print{
   body{background:#fff;padding:0}
   header,main,nav,#toast,.acts,.noprint{display:none!important}
   .modal{position:static;background:none;display:block!important;padding:0}
   @page{margin:10mm}
   .sheet{max-width:none;border-radius:0;padding:0 6mm;background:#fff}
-  table{table-layout:auto}
-  th.n,td.n{padding-left:8px}
+  .tbl{table-layout:auto}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
-<body>
+<body class="locked">
+
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <div class="gate-shop">القبائلي للامونيوم ومستلزماته</div>
+
+    <div id="g-login">
+      <h2>تسجيل الدخول</h2>
+      <label>كلمة السر</label>
+      <div class="keyrow">
+        <input id="g-pw" type="password" autocomplete="off">
+        <button class="btn alt gt" type="button" onclick="gToggle(['g-pw'],this)">إظهار</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="g-rem" checked> تذكر الدخول على هذا الجهاز</label>
+      <div class="g-err"></div>
+      <button class="btn full" onclick="doLogin()">دخول</button>
+      <button class="g-link" onclick="showGate('recover')">نسيت كلمة السر؟</button>
+    </div>
+
+    <div id="g-setup" hidden>
+      <h2>إعداد كلمات السر</h2>
+      <p class="note" style="margin-top:0">اختر كلمة سر للمدير (صلاحيات كاملة) وكلمة سر مختلفة للمستخدم (إنشاء الفواتير وعرضها وتسجيل الدفعات فقط). 4 أحرف على الأقل.</p>
+      <label>كلمة سر المدير</label>
+      <input id="g-adm" type="password" autocomplete="new-password" style="margin-bottom:8px">
+      <label>كلمة سر المستخدم</label>
+      <div class="keyrow">
+        <input id="g-usr" type="password" autocomplete="new-password">
+        <button class="btn alt gt" type="button" onclick="gToggle(['g-adm','g-usr'],this)">إظهار</button>
+      </div>
+      <div class="g-err"></div>
+      <button class="btn full" onclick="doSetup()">حفظ ودخول</button>
+      <button class="g-link" id="g-sback" onclick="showGate('login')">رجوع</button>
+    </div>
+
+    <div id="g-recover" hidden>
+      <h2>استرجاع الدخول</h2>
+      <p class="note" style="margin-top:0">اكتب كلمة سر الشيت (كلمة سر Apps Script المحفوظة في هذا الجهاز) لتعيين كلمات سر جديدة.</p>
+      <label>كلمة سر الشيت</label>
+      <div class="keyrow">
+        <input id="g-rk" dir="ltr" type="password" autocomplete="off">
+        <button class="btn alt gt" type="button" onclick="gToggle(['g-rk'],this)">إظهار</button>
+      </div>
+      <div class="g-err"></div>
+      <button class="btn full" onclick="doRecover()">تحقق</button>
+      <button class="g-link" onclick="showGate('login')">رجوع</button>
+    </div>
+  </div>
+</div>
 
 <header>
+  <button class="out" onclick="logout()">خروج</button>
   <h1>القبائلي للامونيوم ومستلزماته</h1>
   <small id="hsub"></small>
 </header>
@@ -122,7 +196,7 @@ td.n,th.n{text-align:left;font-variant-numeric:tabular-nums}
 
   <!-- الفواتير -->
   <section id="s-list">
-    <div class="sum"><span>إجمالي المتبقي على العملاء</span><b id="sum-due">0</b></div>
+    <div class="sum adm"><span>إجمالي المتبقي على العملاء</span><b id="sum-due">0</b></div>
     <input id="q" placeholder="بحث بالرقم أو اسم العميل" oninput="renderList()" style="margin-bottom:12px">
     <div id="list"></div>
   </section>
@@ -148,6 +222,16 @@ td.n,th.n{text-align:left;font-variant-numeric:tabular-nums}
 
   <!-- المزامنة والنسخ الاحتياطي -->
   <section id="s-backup">
+    <div class="box">
+      <h2>كلمات السر</h2>
+      <div class="st">اترك الحقل فارغاً إن لم ترد تغيير كلمة السر. كلمات السر محفوظة على هذا الجهاز فقط.</div>
+      <label>كلمة سر المدير الجديدة</label>
+      <input id="st-adm" type="password" autocomplete="new-password">
+      <label>كلمة سر المستخدم الجديدة</label>
+      <input id="st-usr" type="password" autocomplete="new-password">
+      <button class="btn full" onclick="changePw()">حفظ كلمات السر</button>
+      <button class="btn alt full" style="margin-top:8px" onclick="adminOnly() && adminFile({})">حفظ ملف المدير (مدير.txt)</button>
+    </div>
     <div class="box">
       <h2>المزامنة مع Google Sheets</h2>
       <div class="st" id="sync-st"></div>
@@ -176,6 +260,9 @@ td.n,th.n{text-align:left;font-variant-numeric:tabular-nums}
 <datalist id="cat"></datalist>
 <datalist id="custlist"></datalist>
 <datalist id="catg"></datalist>
+<datalist id="units">
+  <option value="قطعة"><option value="علبة"><option value="متر"><option value="كرتونة"><option value="كيس"><option value="كيلو">
+</datalist>
 
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="sheet" id="sheet"></div>
@@ -184,14 +271,23 @@ td.n,th.n{text-align:left;font-variant-numeric:tabular-nums}
 <nav>
   <button class="on" data-t="new" onclick="tab('new')">فاتورة جديدة</button>
   <button data-t="list" onclick="tab('list')">الفواتير</button>
-  <button data-t="items" onclick="tab('items')">الأصناف</button>
-  <button data-t="backup" onclick="tab('backup')">المزامنة</button>
+  <button class="adm" data-t="items" onclick="tab('items')">الأصناف</button>
+  <button class="adm" data-t="backup" onclick="tab('backup')">الإعدادات</button>
 </nav>
 <div id="toast" role="status"></div>
 
 <script>
 const KEY = 'shop-invoices-v1';
 const CRED = 'shop-sync-creds'; /* الرابط وكلمة السر: مفتاح مستقل لا يُمسح عند فصل الربط */
+
+/* بيانات المحل في الفاتورة */
+const SHOP = 'القبائلي للامونيوم ومستلزماته';
+const PHONE = '0925776093';
+const TITLE = 'فاتورة مبيعات أجل';
+const NOTE1 = 'جاء تأكد من البضاعة تاريخ استلامها';
+const NOTE2 = 'ملاحظة البضاعة المباعة لاترد ولا تستبدل';
+const ADDR = 'اجدابيا - جزيرة طبرق';
+
 let db = { invoices: [], items: [], next: 1, sync: null, queue: [], itemsDirty: false };
 let draft = [];
 const mem = {};
@@ -225,7 +321,9 @@ function num(v) {
   const n = parseFloat(s);
   return isNaN(n) ? 0 : n;
 }
-const fmt = n => Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+const fmt = n => Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 3 });
+/* مبالغ الفاتورة بثلاث خانات عشرية مثل 35.000 */
+const fmtD = n => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const today = () => new Date().toLocaleDateString('en-CA');
 const $ = id => document.getElementById(id);
@@ -233,8 +331,164 @@ function toast(m) { const t = $('toast'); t.textContent = m; t.style.display = '
 const invTotal = i => i.lines.reduce((s, l) => s + num(l.qty) * num(l.price), 0);
 const invRem = i => invTotal(i) - num(i.paid);
 
+/* ---------- الدخول والصلاحيات ---------- */
+/* ملاحظة: هذا قفل للشاشة وتحديد لصلاحيات الموظفين، وليس حماية قوية للبيانات.
+   الحماية الحقيقية لبيانات الشيت هي كلمة سر السكربت. */
+const AUTH = 'shop-auth-v1';   /* كلمات السر (مشفرة) على هذا الجهاز فقط، ولا تُرسل للشيت */
+const SESS = 'shop-session-v1';
+const REM = 'shop-remember-v1'; /* تذكر الدخول على هذا الجهاز */
+const ROLE_AR = { admin: 'مدير', user: 'مستخدم' };
+let auth = null, role = null, fails = 0, lockUntil = 0;
+const isAdmin = () => role === 'admin';
+function adminOnly() { if (isAdmin()) return true; toast('هذه العملية للمدير فقط'); return false; }
+
+function loadAuth() {
+  let raw = null;
+  try { raw = localStorage.getItem(AUTH); } catch (e) {}
+  if (!raw) raw = mem[AUTH] || null;
+  try { auth = raw ? JSON.parse(raw) : null; } catch (e) { auth = null; }
+  if (auth && !(auth.admin && auth.user)) auth = null;
+}
+function saveAuth() {
+  const raw = JSON.stringify(auth);
+  mem[AUTH] = raw;
+  try { localStorage.setItem(AUTH, raw); } catch (e) {}
+}
+const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+async function hashPw(pw, salt, weak) {
+  const enc = new TextEncoder();
+  if (!weak && window.crypto && crypto.subtle) {
+    const k = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 120000, hash: 'SHA-256' }, k, 256);
+    return 'p1:' + b64(bits);
+  }
+  /* بديل بسيط إن لم يتوفر التشفير في المتصفح (أضعف) */
+  let h = 5381; const t = salt + pw;
+  for (let i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0;
+  return 'w1:' + h.toString(36);
+}
+function newSalt() {
+  const a = new Uint8Array(12);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a); else a.forEach((_, i) => a[i] = Math.random() * 256);
+  return Array.from(a, x => x.toString(16).padStart(2, '0')).join('');
+}
+async function mkRec(pw) { const salt = newSalt(); return { salt, hash: await hashPw(pw, salt) }; }
+async function verify(pw, rec) {
+  if (!rec) return false;
+  return (await hashPw(pw, rec.salt, rec.hash.startsWith('w1:'))) === rec.hash;
+}
+
+/* شاشة الدخول */
+function gErr(m) { document.querySelectorAll('.g-err').forEach(e => e.textContent = m || ''); }
+function gToggle(ids, b) {
+  const show = $(ids[0]).type === 'password';
+  ids.forEach(id => $(id).type = show ? 'text' : 'password');
+  b.textContent = show ? 'إخفاء' : 'إظهار';
+}
+function showGate(mode) {
+  document.body.classList.add('locked');
+  ['login', 'setup', 'recover'].forEach(m => $('g-' + m).hidden = m !== mode);
+  $('g-sback').hidden = !auth;
+  gErr('');
+  ['g-pw', 'g-rk', 'g-adm', 'g-usr'].forEach(id => { $(id).value = ''; $(id).type = 'password'; });
+  document.querySelectorAll('.gt').forEach(b => b.textContent = 'إظهار');
+  setTimeout(() => { const f = { login: 'g-pw', setup: 'g-adm', recover: 'g-rk' }[mode]; $(f).focus(); }, 60);
+}
+function gLocked() {
+  const w = lockUntil - Date.now();
+  if (w > 0) { gErr('محاولات كثيرة، حاول بعد ' + Math.ceil(w / 1000) + ' ثانية'); return true; }
+  return false;
+}
+function gFail(msg) {
+  if (++fails >= 5) { fails = 0; lockUntil = Date.now() + 30000; msg = 'محاولات كثيرة، انتظر 30 ثانية'; }
+  gErr(msg);
+}
+async function doLogin() {
+  if (gLocked()) return;
+  const pw = $('g-pw').value;
+  if (!pw) { gErr('اكتب كلمة السر'); return; }
+  const r = (await verify(pw, auth.admin)) ? 'admin' : (await verify(pw, auth.user)) ? 'user' : null;
+  if (!r) { gFail('كلمة السر غير صحيحة'); return; }
+  fails = 0; enter(r, $('g-rem').checked);
+}
+/* ملف المدير: يُنزَّل تلقائياً عند تعيين كلمات السر. كلمات الدخول لا تُخزَّن في الجهاز، فتُكتب في الملف عند تعيينها فقط */
+function adminFile(p) {
+  const c = db.sync && db.sync.url ? db.sync : getCred();
+  const L = ['ملف المدير - ' + SHOP, 'التاريخ: ' + today(), ''];
+  if (p.admin) L.push('كلمة سر المدير: ' + p.admin);
+  if (p.user) L.push('كلمة سر المستخدم: ' + p.user);
+  if (!p.admin && !p.user) L.push('كلمات سر الدخول لا تُخزَّن في الجهاز، وتُكتب في هذا الملف عند تعيينها أو تغييرها فقط.');
+  if (c.url) L.push('رابط الشيت: ' + c.url);
+  if (c.key) L.push('كلمة سر الشيت: ' + c.key);
+  L.push('', 'احتفظ بهذا الملف في مكان آمن ولا ترسله للموظفين.');
+  const blob = new Blob(['\ufeff' + L.join('\r\n')], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'مدير.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+async function doSetup() {
+  const a = $('g-adm').value.trim(), u = $('g-usr').value.trim();
+  if (a.length < 4 || u.length < 4) { gErr('كلمة السر 4 أحرف على الأقل'); return; }
+  if (a === u) { gErr('يجب أن تختلف كلمة المدير عن كلمة المستخدم'); return; }
+  auth = { admin: await mkRec(a), user: await mkRec(u) };
+  saveAuth();
+  enter('admin', true);
+  adminFile({ admin: a, user: u });
+  toast('تم حفظ كلمات السر وتنزيل ملف مدير.txt');
+}
+function doRecover() {
+  if (gLocked()) return;
+  const k = $('g-rk').value.trim();
+  const real = (db.sync && db.sync.key) || getCred().key || '';
+  if (!real) { gErr('لا توجد كلمة سر شيت محفوظة على هذا الجهاز، فلا يمكن الاسترجاع من هنا'); return; }
+  if (k !== real) { gFail('كلمة سر الشيت غير صحيحة'); return; }
+  fails = 0; showGate('setup');
+}
+function remember(r) {
+  try { localStorage.setItem(REM, JSON.stringify({ role: r, h: auth[r].hash })); } catch (e) {}
+}
+function enter(r, rem) {
+  role = r;
+  if (rem) remember(r);
+  try { sessionStorage.setItem(SESS, r); } catch (e) {}
+  document.body.classList.remove('locked');
+  document.body.classList.toggle('is-user', r !== 'admin');
+  gErr('');
+  refreshLists();
+  tab('new');
+}
+function logout() {
+  role = null;
+  try { sessionStorage.removeItem(SESS); localStorage.removeItem(REM); } catch (e) {}
+  closeModal();
+  resetDraft();
+  $('q').value = '';
+  showGate('login');
+}
+async function changePw() {
+  if (!adminOnly()) return;
+  const a = $('st-adm').value.trim(), u = $('st-usr').value.trim();
+  if (!a && !u) { toast('اكتب كلمة سر جديدة'); return; }
+  if ((a && a.length < 4) || (u && u.length < 4)) { toast('كلمة السر 4 أحرف على الأقل'); return; }
+  let same = false;
+  if (a && u) same = a === u;
+  else if (a) same = await verify(a, auth.user);
+  else same = await verify(u, auth.admin);
+  if (same) { toast('يجب أن تختلف كلمة المدير عن كلمة المستخدم'); return; }
+  if (a) auth.admin = await mkRec(a);
+  if (u) auth.user = await mkRec(u);
+  saveAuth();
+  try { if (localStorage.getItem(REM)) remember(role); } catch (e) {}
+  $('st-adm').value = ''; $('st-usr').value = '';
+  adminFile({ admin: a, user: u });
+  toast('تم تحديث كلمات السر وتنزيل ملف مدير.txt');
+}
+
 /* ---------- تبويبات ---------- */
 function tab(t) {
+  if (!role) return;
+  if (role !== 'admin' && (t === 'items' || t === 'backup')) { toast('هذه الصفحة للمدير فقط'); return; }
   document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === 's-' + t));
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   if (t === 'list') renderList();
@@ -244,8 +498,9 @@ function tab(t) {
 }
 
 /* ---------- فاتورة جديدة ---------- */
+const newLine = () => ({ name: '', qty: '1', unit: '', price: '' });
 function resetDraft() {
-  draft = [{ name: '', qty: '1', price: '' }];
+  draft = [newLine()];
   $('inv-no').value = db.next;
   $('inv-date').value = today();
   $('inv-cust').value = '';
@@ -259,24 +514,37 @@ function renderLines() {
       <input list="cat" placeholder="اسم الصنف" value="${esc(l.name)}" oninput="setLine(${i},'name',this)" autocomplete="off">
       <div class="row3">
         <div><label>الكمية</label><input inputmode="decimal" value="${esc(l.qty)}" oninput="setLine(${i},'qty',this)"></div>
-        <div><label>السعر</label><input inputmode="decimal" value="${esc(l.price)}" oninput="setLine(${i},'price',this)"></div>
-        <div class="val">القيمة<b id="v${i}">${fmt(num(l.qty) * num(l.price))}</b></div>
+        <div><label>الوحدة</label><input data-f="unit" list="units" placeholder="قطعة" value="${esc(l.unit)}" oninput="setLine(${i},'unit',this)" autocomplete="off"></div>
+        <div><label>السعر</label><input data-f="price" inputmode="decimal" value="${esc(l.price)}" oninput="setLine(${i},'price',this)"></div>
       </div>
+      <div class="vline"><span>القيمة</span><b id="v${i}">${fmt(num(l.qty) * num(l.price))}</b></div>
       ${draft.length > 1 ? `<button class="x" onclick="delLine(${i})">حذف الصنف</button>` : ''}
     </div>`).join('');
 }
 function addLine() {
-  draft.push({ name: '', qty: '1', price: '' });
+  draft.push(newLine());
   renderLines();
   const ins = $('lines').querySelectorAll('.line');
   ins[ins.length - 1].querySelector('input').focus();
 }
 function delLine(i) { draft.splice(i, 1); renderLines(); totals(); }
+/* آخر وحدة استُخدمت لنفس الصنف في فواتير سابقة */
+function lastUnit(name) {
+  for (const inv of db.invoices) { const l = inv.lines.find(x => x.name === name && x.unit); if (l) return l.unit; }
+  return '';
+}
 function setLine(i, f, el) {
   draft[i][f] = el.value;
-  if (f === 'name' && !num(draft[i].price)) {
-    const m = db.items.find(x => x.name === el.value.trim());
-    if (m) { draft[i].price = String(m.price); el.closest('.line').querySelectorAll('input')[2].value = m.price; }
+  if (f === 'name') {
+    const ln = el.closest('.line'), nm = el.value.trim();
+    if (!num(draft[i].price)) {
+      const m = db.items.find(x => x.name === nm);
+      if (m) { draft[i].price = String(m.price); ln.querySelector('[data-f=price]').value = m.price; }
+    }
+    if (!draft[i].unit) {
+      const u = lastUnit(nm);
+      if (u) { draft[i].unit = u; ln.querySelector('[data-f=unit]').value = u; }
+    }
   }
   $('v' + i).textContent = fmt(num(draft[i].qty) * num(draft[i].price));
   totals();
@@ -290,7 +558,7 @@ function totals() {
 }
 async function saveInvoice() {
   const lines = draft.filter(l => l.name.trim() && num(l.qty) > 0 && num(l.price) >= 0)
-    .map(l => ({ name: l.name.trim(), qty: num(l.qty), price: num(l.price) }));
+    .map(l => ({ name: l.name.trim(), qty: num(l.qty), unit: (l.unit || '').trim(), price: num(l.price) }));
   if (!lines.length) { toast('أضف صنفاً واحداً على الأقل بالاسم والكمية'); return; }
   const inv = {
     id: Date.now(), no: db.next, date: $('inv-date').value || today(),
@@ -331,32 +599,46 @@ function showInvoice(id) {
   const i = db.invoices.find(x => x.id === id); if (!i) return;
   const rem = invRem(i);
   $('sheet').innerHTML = `
-    <div class="shop">القبائلي للامونيوم ومستلزماته</div>
+    <div class="shop">${SHOP}</div>
     <div class="meta">
-      <div class="m-r">هاتف 0925776093</div>
-      <div class="m-c">فاتورة مبيعات أجل</div>
+      <div class="m-r">هاتف: ${PHONE}</div>
+      <div class="m-c">${TITLE}</div>
       <div class="m-l"><div>${esc(i.date)}${i.time ? ' ' + esc(i.time) : ''}</div><div>رقم الفاتورة: ${i.no}</div></div>
     </div>
-    ${i.customer ? `<div class="val">العميل: ${esc(i.customer)}</div>` : ''}
-    <table>
-      <tr><th>الصنف</th><th class="n">الكمية</th><th class="n">السعر</th><th class="n">القيمة</th></tr>
-      ${i.lines.map(l => `<tr><td>${esc(l.name)}</td><td class="n">${fmt(l.qty)}</td><td class="n">${fmt(l.price)}</td><td class="n">${fmt(l.qty * l.price)}</td></tr>`).join('')}
+    ${i.customer ? `<div class="val">العميل: <b style="color:var(--ink)">${esc(i.customer)}</b></div>` : ''}
+    <table class="tbl">
+      <thead><tr>
+        <th class="c">م</th>
+        <th>الوصف<small>DESCRIPTION</small></th>
+        <th class="c">الكمية<small>QTY</small></th>
+        <th class="n">السعر<small>UNIT PRICE</small></th>
+        <th class="n">الإجمالي<small>TOTAL</small></th>
+      </tr></thead>
+      <tbody>
+        ${i.lines.map((l, k) => `<tr>
+          <td class="c">${k + 1}</td>
+          <td>${esc(l.name)}</td>
+          <td class="c">${fmt(l.qty)}${l.unit ? ' ' + esc(l.unit) : ''}</td>
+          <td class="n">${fmtD(l.price)}</td>
+          <td class="n">${fmtD(l.qty * l.price)}</td></tr>`).join('')}
+      </tbody>
+      <tfoot><tr><td colspan="4">إجمالي الفاتورة</td><td class="n">${fmtD(invTotal(i))}</td></tr></tfoot>
     </table>
-    <div class="totals" style="margin:8px 0">
-      <div class="r big"><span>الإجمالي</span><span>${fmt(invTotal(i))}</span></div>
-      <div class="r"><span>المدفوع</span><span>${fmt(i.paid)}</span></div>
-      <div class="r"><span>الرصيد المتبقي</span><span class="${rem > 0 ? 'due' : 'paidok'}">${fmt(rem)}</span></div>
+    <div class="sumrow">
+      <div>الإجمالي<b>${fmtD(invTotal(i))}</b></div>
+      <div>المدفوع<b>${fmtD(i.paid)}</b></div>
+      <div>الرصيد المتبقي<b class="${rem > 0 ? 'due' : 'paidok'}">${fmtD(rem)}</b></div>
     </div>
     <div class="foot">
-      <div>الرجاء التأكد من الفاتورة في نفس يوم استلامها</div>
-      <div>ملاحظة: البضاعة المباعة لا ترد ولا تستبدل</div>
-      <div class="addr">اجدابيا - جزيرة طبرق</div>
+      <div>${NOTE1}</div>
+      <div>${NOTE2}</div>
+      <div class="addr">${ADDR}</div>
     </div>
     <div class="acts">
       <button class="btn" onclick="shareInvoice(${i.id})">مشاركة</button>
       <button class="btn alt" onclick="window.print()">طباعة</button>
       ${rem > 0 ? `<button class="btn alt" onclick="pay(${i.id})">تسجيل دفعة</button>` : ''}
-      <button class="btn bad" onclick="delInvoice(${i.id})">حذف</button>
+      ${isAdmin() ? `<button class="btn bad" onclick="delInvoice(${i.id})">حذف</button>` : ''}
       <button class="btn alt" style="grid-column:1/-1" onclick="closeModal()">إغلاق</button>
     </div>`;
   $('modal').classList.add('on');
@@ -372,6 +654,7 @@ async function pay(id) {
   flush();
 }
 async function delInvoice(id) {
+  if (!adminOnly()) return;
   if (!confirm('حذف هذه الفاتورة نهائياً؟')) return;
   db.invoices = db.invoices.filter(x => x.id !== id);
   queueOp(id, true);
@@ -380,9 +663,9 @@ async function delInvoice(id) {
 }
 function invoiceText(i) {
   const rem = invRem(i);
-  return `القبائلي للامونيوم ومستلزماته\nهاتف 0925776093\nفاتورة مبيعات أجل\nرقم الفاتورة: ${i.no}\nالتاريخ: ${i.date}${i.time ? ' ' + i.time : ''}${i.customer ? '\nالعميل: ' + i.customer : ''}\n\n` +
-    i.lines.map(l => `${l.name}: ${fmt(l.qty)} × ${fmt(l.price)} = ${fmt(l.qty * l.price)}`).join('\n') +
-    `\n\nالإجمالي: ${fmt(invTotal(i))}\nالمدفوع: ${fmt(i.paid)}\nالرصيد المتبقي: ${fmt(rem)}\n\nالرجاء التأكد من الفاتورة في نفس يوم استلامها\nملاحظة: البضاعة المباعة لا ترد ولا تستبدل\nاجدابيا - جزيرة طبرق`;
+  return `${SHOP}\nهاتف: ${PHONE}\n${TITLE}\nرقم الفاتورة: ${i.no}\nالتاريخ: ${i.date}${i.time ? ' ' + i.time : ''}${i.customer ? '\nالعميل: ' + i.customer : ''}\n\n` +
+    i.lines.map((l, k) => `${k + 1}. ${l.name}: ${fmt(l.qty)}${l.unit ? ' ' + l.unit : ''} × ${fmtD(l.price)} = ${fmtD(l.qty * l.price)}`).join('\n') +
+    `\n\nالإجمالي: ${fmtD(invTotal(i))}\nالمدفوع: ${fmtD(i.paid)}\nالرصيد المتبقي: ${fmtD(rem)}\n\n${NOTE1}\n${NOTE2}\n${ADDR}`;
 }
 async function shareInvoice(id) {
   const i = db.invoices.find(x => x.id === id); const t = invoiceText(i);
@@ -414,6 +697,7 @@ function renderItems() {
   }).join('') : `<div class="empty">${db.items.length ? 'لا توجد أصناف مطابقة' : 'لا توجد أصناف بعد. أضف أول صنف من الأعلى.'}</div>`;
 }
 async function addItem() {
+  if (!adminOnly()) return;
   const n = $('ni-name').value.trim(), p = num($('ni-price').value), c = $('ni-cat').value.trim();
   if (!n) { toast('اكتب اسم الصنف'); return; }
   const m = db.items.find(x => x.name === n);
@@ -425,6 +709,7 @@ async function addItem() {
   $('ni-name').focus();
 }
 async function editItem(k, f, v) {
+  if (!adminOnly()) return;
   if (f === 'name') {
     const n = v.trim();
     if (!n) { toast('اسم الصنف لا يمكن أن يكون فارغاً'); renderItems(); return; }
@@ -439,6 +724,7 @@ async function editItem(k, f, v) {
   flush();
 }
 async function delItem(k) {
+  if (!adminOnly()) return;
   if (!confirm('حذف هذا الصنف من القائمة؟ الفواتير السابقة لا تتأثر.')) return;
   db.items.splice(k, 1); db.itemsDirty = true;
   await save(); refreshLists(); renderItems(); flush();
@@ -454,7 +740,7 @@ function refreshLists() {
   if (sel.value !== cur) sel.value = '';
   const names = [...new Set(db.invoices.map(i => i.customer).filter(Boolean))];
   $('custlist').innerHTML = names.map(n => `<option value="${esc(n)}"></option>`).join('');
-  $('hsub').textContent = db.invoices.length + ' فاتورة محفوظة' + syncBadge();
+  $('hsub').textContent = (role ? ROLE_AR[role] + ' • ' : '') + db.invoices.length + ' فاتورة محفوظة' + syncBadge();
 }
 
 /* ---------- المزامنة مع Google Sheets ---------- */
@@ -575,6 +861,7 @@ function renderSync() {
   if (a !== $('sy-url') && a !== $('sy-key')) { $('sy-url').value = c.url || ''; $('sy-key').value = c.key || ''; }
 }
 async function connectSync() {
+  if (!adminOnly()) return;
   const url = $('sy-url').value.trim();
   const key = $('sy-key').value.trim() || (db.sync ? db.sync.key : '') || getCred().key || '';
   if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)) { toast('الرابط يجب أن يبدأ بـ https://script.google.com وينتهي بـ /exec'); return; }
@@ -588,6 +875,7 @@ async function connectSync() {
   syncNow(true);
 }
 async function disconnectSync() {
+  if (!adminOnly()) return;
   if (!syncOn()) return;
   if (!confirm('فصل الربط مع الشيت؟ بياناتك تبقى على الجوال وفي الشيت.')) return;
   setCred({ url: db.sync.url, key: db.sync.key }); /* يبقى الرابط وكلمة السر محفوظين للتعبئة التلقائية */
@@ -599,6 +887,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) sync
 
 /* ---------- نسخة احتياطية ---------- */
 function exportData() {
+  if (!adminOnly()) return;
   const blob = new Blob([JSON.stringify({ invoices: db.invoices, items: db.items, next: db.next })], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -607,6 +896,7 @@ function exportData() {
   toast('تم حفظ النسخة الاحتياطية');
 }
 function importData(ev) {
+  if (!adminOnly()) { ev.target.value = ''; return; }
   const f = ev.target.files[0]; if (!f) return;
   const r = new FileReader();
   r.onload = async () => {
@@ -627,7 +917,18 @@ function importData(ev) {
   r.readAsText(f); ev.target.value = '';
 }
 
-(async function init() { await load(); refreshLists(); resetDraft(); renderSync(); syncNow(false); })();
+(async function init() {
+  await load(); loadAuth();
+  refreshLists(); resetDraft(); renderSync(); syncNow(false);
+  [['g-pw', doLogin], ['g-rk', doRecover], ['g-usr', doSetup]].forEach(([id, fn]) =>
+    $(id).addEventListener('keydown', e => { if (e.key === 'Enter') fn(); }));
+  let s = null, rm = null;
+  try { s = sessionStorage.getItem(SESS); rm = JSON.parse(localStorage.getItem(REM)); } catch (e) {}
+  if (!auth) showGate('setup');
+  else if (s === 'admin' || s === 'user') enter(s);
+  else if (rm && auth[rm.role] && auth[rm.role].hash === rm.h) enter(rm.role);
+  else showGate('login');
+})();
 </script>
 </body>
 </html>
