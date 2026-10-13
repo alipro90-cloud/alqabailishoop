@@ -79,6 +79,8 @@ nav button.on{color:var(--main);font-weight:700;box-shadow:inset 0 3px 0 var(--m
 .nmrow small{color:var(--mute);font-variant-numeric:tabular-nums;align-self:center}
 .nmrow span{align-self:center}
 
+.editbar{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#fff3cd;border:1.5px solid #d9b44a;border-radius:10px;padding:6px 12px;margin-bottom:12px;font-weight:700}
+.editbar button{min-height:36px;padding:0 12px;background:transparent;color:var(--due);border:1.5px solid var(--due);font-size:14px}
 .warnbar{background:#fff;color:var(--due);font-size:12.5px;font-weight:700;border-radius:6px;padding:5px 8px;margin-top:8px;line-height:1.5}
 
 /* ---------- زر المخزون المتحرك ---------- */
@@ -210,6 +212,7 @@ body:not(.locked) .gate{display:none}
 <main>
   <!-- فاتورة جديدة -->
   <section id="s-new" class="on">
+    <div class="editbar" id="edit-bar" hidden><span id="edit-txt"></span><button type="button" onclick="cancelEdit()">إلغاء التعديل</button></div>
     <div class="head2">
       <div><label>رقم الفاتورة</label><input id="inv-no" readonly></div>
       <div><label>التاريخ</label><input id="inv-date" type="date"></div>
@@ -226,7 +229,7 @@ body:not(.locked) .gate{display:none}
       <div class="r"><span>المدفوع</span><input id="inv-paid" inputmode="decimal" placeholder="0" oninput="totals()"></div>
       <div class="r"><span>الرصيد المتبقي</span><span id="t-rem">0</span></div>
     </div>
-    <button class="btn full" onclick="saveInvoice()">حفظ الفاتورة</button>
+    <button class="btn full" id="save-btn" onclick="saveInvoice()">حفظ الفاتورة</button>
   </section>
 
   <!-- الفواتير -->
@@ -681,8 +684,10 @@ function adjustStock(lines, sign) {
 }
 
 /* ---------- فاتورة جديدة ---------- */
+let editId = null; /* رقم الفاتورة قيد التعديل (إن وجدت) */
 const newLine = () => ({ name: '', qty: '1', unit: '', price: '' });
 function resetDraft() {
+  editId = null; paintEdit();
   draft = [newLine()];
   $('inv-no').value = db.next;
   $('inv-date').value = today();
@@ -743,10 +748,56 @@ function totals() {
   const r = $('t-rem'); r.textContent = fmt(rem);
   r.className = rem > 0 ? 'due' : 'paidok';
 }
+function paintEdit() {
+  const b = $('edit-bar'), sb = $('save-btn'); if (!b || !sb) return;
+  b.hidden = editId === null;
+  if (editId !== null) {
+    const i = db.invoices.find(x => x.id === editId);
+    $('edit-txt').textContent = 'تعديل الفاتورة رقم ' + (i ? i.no : '');
+  }
+  sb.textContent = editId === null ? 'حفظ الفاتورة' : 'حفظ التعديلات';
+}
+function editInvoice(id) {
+  const i = db.invoices.find(x => x.id === id); if (!i) return;
+  closeModal();
+  tab('new');
+  editId = id;
+  draft = i.lines.map(l => ({ name: l.name, qty: String(l.qty), unit: l.unit || '', price: String(l.price) }));
+  $('inv-no').value = i.no;
+  $('inv-date').value = i.date;
+  $('inv-cust').value = i.customer || '';
+  $('inv-paid').value = i.paid ? String(i.paid) : '';
+  renderLines(); totals(); paintEdit();
+}
+function cancelEdit() { resetDraft(); }
+/* الصنف الجديد فقط يُضاف للقائمة، وسعر الصنف الموجود لا يتغير من الفاتورة */
+function addNewItems(lines) {
+  lines.forEach(l => {
+    if (!db.items.some(x => x.name === l.name)) { db.items.push({ name: l.name, price: l.price, category: '', stock: null, min: null }); db.itemsDirty = true; }
+  });
+}
 async function saveInvoice() {
   const lines = draft.filter(l => l.name.trim() && num(l.qty) > 0 && num(l.price) >= 0)
     .map(l => ({ name: l.name.trim(), qty: num(l.qty), unit: (l.unit || '').trim(), price: num(l.price) }));
   if (!lines.length) { toast('أضف صنفاً واحداً على الأقل بالاسم والكمية'); return; }
+  if (editId !== null) {
+    const old = db.invoices.find(x => x.id === editId);
+    if (!old) { toast('الفاتورة لم تعد موجودة'); resetDraft(); return; }
+    adjustStock(old.lines, +1); /* إرجاع كميات الفاتورة القديمة ثم خصم الجديدة */
+    old.date = $('inv-date').value || old.date;
+    old.customer = $('inv-cust').value.trim();
+    old.lines = lines;
+    old.paid = num($('inv-paid').value);
+    addNewItems(lines);
+    adjustStock(lines, -1);
+    queueOp(old.id);
+    await save();
+    refreshLists();
+    resetDraft();
+    showInvoice(old.id);
+    pushNow('تم حفظ التعديل على الفاتورة رقم ' + old.no + ' في الشيت');
+    return;
+  }
   const inv = {
     id: Date.now(), no: db.next, date: $('inv-date').value || today(),
     time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
@@ -823,6 +874,7 @@ function showInvoice(id) {
     </div>
     <div class="acts">
       <button class="btn" onclick="shareInvoice(${i.id})">مشاركة</button>
+      <button class="btn alt" onclick="editInvoice(${i.id})">تعديل</button>
       <button class="btn alt" onclick="window.print()">طباعة</button>
       ${rem > 0 ? `<button class="btn alt" onclick="pay(${i.id})">تسجيل دفعة</button>` : ''}
       ${isAdmin() ? `<button class="btn bad" onclick="delInvoice(${i.id})">حذف</button>` : ''}
