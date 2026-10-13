@@ -57,6 +57,37 @@ nav button.on{color:var(--main);font-weight:700;box-shadow:inset 0 3px 0 var(--m
 .modal{position:fixed;inset:0;background:rgba(20,28,32,.55);z-index:20;display:none;overflow:auto;padding:14px}
 .modal.on{display:block}
 
+/* ---------- زر الأصناف مع السهم ---------- */
+.nmwrap{position:relative}
+.nmwrap input{padding-inline-start:44px}
+.arw{position:absolute;inset-inline-start:0;top:0;height:46px;width:42px;min-height:0;padding:0;background:transparent;
+  color:#000;font-size:16px;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.arw span{display:inline-block;transition:transform .2s}
+.arw[aria-expanded="true"] span{transform:rotate(180deg)}
+.names{position:absolute;inset-inline:0;top:50px;max-height:min(320px,50vh);max-height:min(320px,50dvh);overflow-y:scroll;
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;scrollbar-width:thin;scrollbar-color:var(--main) var(--gray);
+  background:var(--paper);border:1.5px solid var(--ink);border-radius:8px;z-index:8;padding:0 10px 6px;box-shadow:0 8px 20px rgba(0,0,0,.2)}
+.names::-webkit-scrollbar{width:8px}
+.names::-webkit-scrollbar-thumb{background:var(--main);border-radius:4px}
+.names::-webkit-scrollbar-track{background:var(--gray)}
+.names .grp{position:sticky;top:0;background:var(--paper);margin:0;padding:10px 2px 6px;z-index:1}
+.nmrow{display:flex;justify-content:space-between;gap:10px;width:100%;background:none;color:var(--ink);text-align:right;
+  border-radius:0;border-bottom:1px solid var(--line);min-height:42px;padding:0 4px;font-size:15px}
+.nmrow small{color:var(--mute);font-variant-numeric:tabular-nums;align-self:center}
+.nmrow span{align-self:center}
+
+.warnbar{background:#fff;color:var(--due);font-size:12.5px;font-weight:700;border-radius:6px;padding:5px 8px;margin-top:8px;line-height:1.5}
+
+/* ---------- زر المخزون المتحرك ---------- */
+.stk{display:flex;align-items:center;gap:10px;width:100%;background:var(--paper);color:var(--ink);
+  border:1.5px solid var(--line);text-align:right;padding:8px 12px;min-height:52px;margin-bottom:12px;overflow:hidden}
+.stk.warn{border-color:var(--due);color:var(--due)}
+.stk .win{flex:1;min-width:0;overflow:hidden;height:24px}
+.stk .msg{display:block;line-height:24px;font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stk .msg.slide{animation:slideUp .5s ease both}
+.stk .cnt{background:var(--due);color:#fff;border-radius:99px;font-size:12.5px;min-width:24px;padding:1px 8px;text-align:center}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:none;opacity:1}}
+
 /* ---------- شكل الفاتورة ---------- */
 .sheet{background:var(--paper);max-width:600px;margin:0 auto;border-radius:12px;padding:16px;
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -93,7 +124,7 @@ nav button.on{color:var(--main);font-weight:700;box-shadow:inset 0 3px 0 var(--m
 
 /* ---------- الدخول والصلاحيات ---------- */
 [hidden]{display:none!important}
-body.locked header,body.locked main,body.locked nav,body.locked #modal{display:none!important}
+body.locked header,body.locked main,body.locked nav,body.locked #modal,body.locked #names{display:none!important}
 body:not(.locked) .gate{display:none}
 .is-user .adm{display:none!important}
 .gate{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
@@ -108,7 +139,7 @@ body:not(.locked) .gate{display:none}
 @media print{.gate{display:none!important}}
 @media print{
   body{background:#fff;padding:0}
-  header,main,nav,#toast,.acts,.noprint{display:none!important}
+  header,main,nav,#toast,#names,.acts,.noprint{display:none!important}
   .modal{position:static;background:none;display:block!important;padding:0}
   @page{margin:10mm}
   .sheet{max-width:none;border-radius:0;padding:0 6mm;background:#fff}
@@ -170,6 +201,7 @@ body:not(.locked) .gate{display:none}
   <button class="out" onclick="logout()">خروج</button>
   <h1>القبائلي للامونيوم ومستلزماته</h1>
   <small id="hsub"></small>
+  <div class="warnbar" id="warn" hidden></div>
 </header>
 
 <main>
@@ -203,13 +235,26 @@ body:not(.locked) .gate{display:none}
 
   <!-- الأصناف -->
   <section id="s-items">
-    <p class="note">أضف أصنافك وأسعارها وتصنيفها هنا لتظهر تلقائياً عند كتابة الفاتورة. الصنف الجديد يُضاف هنا أيضاً عند حفظ أي فاتورة، لكن سعر الصنف الموجود لا يتغير إلا من هذه الصفحة.</p>
+    <button class="stk" id="stk-btn" onclick="showStock()">
+      <span aria-hidden="true">📦</span>
+      <span class="win"><span class="msg" id="stk-msg"></span></span>
+      <span class="cnt" id="stk-cnt" hidden></span>
+    </button>
+    <p class="note">أضف أصنافك وأسعارها وتصنيفها هنا لتظهر تلقائياً عند كتابة الفاتورة. الصنف الجديد يُضاف هنا أيضاً عند حفظ أي فاتورة، لكن سعر الصنف الموجود لا يتغير إلا من هذه الصفحة. إذا كتبت «الكمية المتوفرة» لصنف فسيُخصم منها تلقائياً عند كل فاتورة، وسيتنبه الزر أعلاه عندما تقترب من النفاد.</p>
     <div class="line">
       <label>اسم الصنف</label>
-      <input id="ni-name" placeholder="اسم الصنف" autocomplete="off">
+      <div class="nmwrap">
+        <input id="ni-name" placeholder="اسم الصنف" autocomplete="off">
+        <button class="arw" id="arw" type="button" aria-expanded="false" aria-label="عرض أسماء الأصناف المضافة" onclick="toggleNames()"><span>▼</span></button>
+        <div class="names" id="names" hidden></div>
+      </div>
       <div class="row2">
         <div><label>السعر</label><input id="ni-price" inputmode="decimal" placeholder="0"></div>
         <div><label>التصنيف</label><input id="ni-cat" list="catg" placeholder="مثل: ألمنيوم" autocomplete="off"></div>
+      </div>
+      <div class="row2">
+        <div><label>الكمية المتوفرة</label><input id="ni-stock" inputmode="decimal" placeholder="اختياري"></div>
+        <div><label>نبّهني عند وصولها إلى</label><input id="ni-min" inputmode="decimal" placeholder="5"></div>
       </div>
       <button class="btn full" style="margin-top:10px" onclick="addItem()">إضافة الصنف</button>
     </div>
@@ -287,6 +332,8 @@ const TITLE = 'فاتورة مبيعات أجل';
 const NOTE1 = 'جاء تأكد من البضاعة تاريخ استلامها';
 const NOTE2 = 'ملاحظة البضاعة المباعة لاترد ولا تستبدل';
 const ADDR = 'اجدابيا - جزيرة طبرق';
+
+const DEF_MIN = 5; /* حد التنبيه الافتراضي إن لم تحدده لصنف */
 
 let db = { invoices: [], items: [], next: 1, sync: null, queue: [], itemsDirty: false };
 let draft = [];
@@ -462,6 +509,7 @@ function logout() {
   role = null;
   try { sessionStorage.removeItem(SESS); localStorage.removeItem(REM); } catch (e) {}
   closeModal();
+  closeNames();
   resetDraft();
   $('q').value = '';
   showGate('login');
@@ -491,10 +539,105 @@ function tab(t) {
   if (role !== 'admin' && (t === 'items' || t === 'backup')) { toast('هذه الصفحة للمدير فقط'); return; }
   document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === 's-' + t));
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  closeNames();
   if (t === 'list') renderList();
   if (t === 'items') renderItems();
   if (t === 'backup') renderSync();
   window.scrollTo(0, 0);
+}
+
+/* ---------- السهم: أسماء الأصناف المضافة ---------- */
+function closeNames() {
+  $('names').hidden = true;
+  $('arw').setAttribute('aria-expanded', 'false');
+}
+function toggleNames() {
+  const p = $('names'), open = p.hidden;
+  p.hidden = !open;
+  $('arw').setAttribute('aria-expanded', String(open));
+  if (open) renderNames();
+}
+function renderNames() {
+  const p = $('names'); if (p.hidden) return;
+  const rows = db.items.map((it, k) => ({ it, k })).sort((a, b) => a.it.name.localeCompare(b.it.name, 'ar'));
+  p.innerHTML = `<div class="grp">الأصناف المضافة (${db.items.length})</div>` +
+    (rows.length ? rows.map(({ it, k }) =>
+      `<button class="nmrow" onclick="goItem(${k})"><span>${esc(it.name)}</span><small>${fmt(it.price)}</small></button>`).join('')
+      : '<div class="empty" style="padding:16px">لا توجد أصناف مضافة بعد</div>');
+}
+document.addEventListener('click', e => { if (!e.target.closest('.nmwrap')) closeNames(); });
+/* الانتقال إلى صنف داخل صفحة الأصناف */
+function goItem(k) {
+  const it = db.items[k]; if (!it) return;
+  closeModal(); closeNames();
+  $('iq').value = it.name; $('ifilter').value = '';
+  renderItems();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- المخزون: المنتهية وقريبة النفاد ---------- */
+const tracked = it => it.stock !== undefined && it.stock !== null && it.stock !== '';
+const minOf = it => (it.min === undefined || it.min === null || it.min === '') ? DEF_MIN : num(it.min);
+function alerts() {
+  const out = [], low = [];
+  db.items.forEach(it => {
+    if (!tracked(it)) return;
+    const s = num(it.stock);
+    if (s <= 0) out.push(it); else if (s <= minOf(it)) low.push(it);
+  });
+  return { out, low };
+}
+let tkI = 0;
+function tickMsgs() {
+  const { out, low } = alerts();
+  return [
+    ...low.map(it => `سينتهي الصنف «${it.name}» قريباً (المتبقي ${fmt(it.stock)})`),
+    ...out.map(it => `انتهى الصنف «${it.name}»`)
+  ];
+}
+function renderTicker() {
+  const b = $('stk-btn'); if (!b) return;
+  const m = tickMsgs(), t = $('stk-msg'), c = $('stk-cnt');
+  b.classList.toggle('warn', m.length > 0);
+  c.hidden = !m.length; c.textContent = m.length;
+  if (!m.length) {
+    const txt = db.items.some(tracked) ? 'المخزون سليم، لا توجد أصناف قاربت على النفاد' : 'المخزون: اكتب الكمية المتوفرة للأصناف لتفعيل التنبيه';
+    if (t.textContent !== txt) t.textContent = txt;
+    t.classList.remove('slide');
+    return;
+  }
+  tkI %= m.length;
+  if (t.textContent === m[tkI]) return;
+  t.textContent = m[tkI];
+  t.classList.remove('slide'); void t.offsetWidth; t.classList.add('slide');
+}
+setInterval(() => { tkI++; renderTicker(); }, 3000);
+
+function showStock() {
+  const { out, low } = alerts();
+  const row = (it, txt) => {
+    const k = db.items.indexOf(it);
+    return `<button class="card" onclick="goItem(${k})"><div><div class="t">${esc(it.name)}</div>
+      <div class="s">${it.category ? esc(it.category) : 'بدون تصنيف'}</div></div><div class="due">${txt}</div></button>`;
+  };
+  $('sheet').innerHTML = `
+    <div class="shop">حالة المخزون</div>
+    ${!out.length && !low.length ? '<div class="empty">لا توجد أصناف منتهية أو قاربت على النفاد</div>' : ''}
+    ${low.length ? `<div class="grp">ستنتهي قريباً (${low.length})</div>` + low.map(it => row(it, 'المتبقي ' + fmt(it.stock))).join('') : ''}
+    ${out.length ? `<div class="grp">منتهية (${out.length})</div>` + out.map(it => row(it, 'منتهي')).join('') : ''}
+    <p class="note">الأصناف التي لم تُحدد لها كمية لا تظهر هنا. اضغط على صنف لتعديل كميته.</p>
+    <div class="acts"><button class="btn alt" style="grid-column:1/-1" onclick="closeModal()">إغلاق</button></div>`;
+  $('modal').classList.add('on');
+}
+/* خصم أو إرجاع الكمية المباعة من المخزون */
+function adjustStock(lines, sign) {
+  lines.forEach(l => {
+    const it = db.items.find(x => x.name === l.name);
+    if (it && tracked(it)) {
+      it.stock = Math.round((num(it.stock) + sign * num(l.qty)) * 1000) / 1000;
+      db.itemsDirty = true;
+    }
+  });
 }
 
 /* ---------- فاتورة جديدة ---------- */
@@ -570,14 +713,14 @@ async function saveInvoice() {
   queueOp(inv.id);
   /* الصنف الجديد فقط يُضاف للقائمة، وسعر الصنف الموجود لا يتغير من الفاتورة */
   lines.forEach(l => {
-    if (!db.items.some(x => x.name === l.name)) { db.items.push({ name: l.name, price: l.price, category: '' }); db.itemsDirty = true; }
+    if (!db.items.some(x => x.name === l.name)) { db.items.push({ name: l.name, price: l.price, category: '', stock: null, min: null }); db.itemsDirty = true; }
   });
-  const ok = await save();
+  adjustStock(lines, -1); /* خصم الكمية المباعة من المخزون */
+  await save();
   refreshLists();
   resetDraft();
-  flush();
-  toast(ok ? 'تم حفظ الفاتورة رقم ' + inv.no : 'تم الحفظ مؤقتاً فقط، خذ نسخة احتياطية');
   showInvoice(inv.id);
+  pushNow('تم حفظ الفاتورة رقم ' + inv.no + ' في الشيت');
 }
 
 /* ---------- قائمة الفواتير ---------- */
@@ -650,16 +793,18 @@ async function pay(id) {
   if (v <= 0) return;
   i.paid = num(i.paid) + v;
   queueOp(id);
-  await save(); refreshLists(); showInvoice(id); toast('تم تسجيل الدفعة');
-  flush();
+  await save(); refreshLists(); showInvoice(id);
+  pushNow('تم تسجيل الدفعة في الشيت');
 }
 async function delInvoice(id) {
   if (!adminOnly()) return;
-  if (!confirm('حذف هذه الفاتورة نهائياً؟')) return;
+  if (!confirm('حذف هذه الفاتورة نهائياً؟ ستعود كمياتها إلى المخزون.')) return;
+  const inv = db.invoices.find(x => x.id === id);
+  if (inv) adjustStock(inv.lines, +1); /* إرجاع الكميات للمخزون */
   db.invoices = db.invoices.filter(x => x.id !== id);
   queueOp(id, true);
-  await save(); refreshLists(); closeModal(); toast('تم حذف الفاتورة');
-  flush();
+  await save(); refreshLists(); closeModal();
+  pushNow('تم حذف الفاتورة من الشيت');
 }
 function invoiceText(i) {
   const rem = invRem(i);
@@ -692,6 +837,10 @@ function renderItems() {
         <input inputmode="decimal" value="${esc(it.price)}" aria-label="السعر" onchange="editItem(${k},'price',this.value)">
         <input list="catg" value="${esc(it.category || '')}" placeholder="التصنيف" aria-label="التصنيف" onchange="editItem(${k},'category',this.value)">
       </div>
+      <div class="row2">
+        <div><label>الكمية المتوفرة</label><input inputmode="decimal" value="${tracked(it) ? esc(it.stock) : ''}" placeholder="غير محددة" onchange="editItem(${k},'stock',this.value)"></div>
+        <div><label>نبّهني عند</label><input inputmode="decimal" value="${it.min === null || it.min === undefined || it.min === '' ? '' : esc(it.min)}" placeholder="${DEF_MIN}" onchange="editItem(${k},'min',this.value)"></div>
+      </div>
       <button class="x" onclick="delItem(${k})">حذف الصنف</button>
     </div>`;
   }).join('') : `<div class="empty">${db.items.length ? 'لا توجد أصناف مطابقة' : 'لا توجد أصناف بعد. أضف أول صنف من الأعلى.'}</div>`;
@@ -699,13 +848,19 @@ function renderItems() {
 async function addItem() {
   if (!adminOnly()) return;
   const n = $('ni-name').value.trim(), p = num($('ni-price').value), c = $('ni-cat').value.trim();
+  const sr = $('ni-stock').value.trim(), mr = $('ni-min').value.trim();
+  const st = sr === '' ? undefined : num(sr), mn = mr === '' ? undefined : num(mr);
   if (!n) { toast('اكتب اسم الصنف'); return; }
   const m = db.items.find(x => x.name === n);
-  if (m) { m.price = p; if (c) m.category = c; } else db.items.push({ name: n, price: p, category: c });
-  $('ni-name').value = ''; $('ni-price').value = '';
+  if (m) {
+    m.price = p; if (c) m.category = c;
+    if (st !== undefined) m.stock = st;
+    if (mn !== undefined) m.min = mn;
+  } else db.items.push({ name: n, price: p, category: c, stock: st === undefined ? null : st, min: mn === undefined ? null : mn });
+  $('ni-name').value = ''; $('ni-price').value = ''; $('ni-stock').value = ''; $('ni-min').value = '';
   db.itemsDirty = true;
-  await save(); refreshLists(); renderItems(); flush();
-  toast(m ? 'الصنف موجود، تم تحديث سعره' : 'تمت إضافة الصنف');
+  await save(); refreshLists(); renderItems();
+  pushNow(m ? 'الصنف موجود، تم تحديثه في الشيت' : 'تمت إضافة الصنف في الشيت');
   $('ni-name').focus();
 }
 async function editItem(k, f, v) {
@@ -715,6 +870,9 @@ async function editItem(k, f, v) {
     if (!n) { toast('اسم الصنف لا يمكن أن يكون فارغاً'); renderItems(); return; }
     if (db.items.some((x, j) => j !== k && x.name === n)) { toast('يوجد صنف آخر بنفس الاسم'); renderItems(); return; }
     db.items[k].name = n;
+  } else if (f === 'stock' || f === 'min') {
+    const t = v.trim();
+    db.items[k][f] = t === '' ? null : num(t);
   } else {
     db.items[k][f] = f === 'price' ? num(v) : v.trim();
   }
@@ -741,6 +899,9 @@ function refreshLists() {
   const names = [...new Set(db.invoices.map(i => i.customer).filter(Boolean))];
   $('custlist').innerHTML = names.map(n => `<option value="${esc(n)}"></option>`).join('');
   $('hsub').textContent = (role ? ROLE_AR[role] + ' • ' : '') + db.invoices.length + ' فاتورة محفوظة' + syncBadge();
+  renderTicker();
+  renderNames();
+  renderWarn();
 }
 
 /* ---------- المزامنة مع Google Sheets ---------- */
@@ -806,9 +967,31 @@ function mergeRemote(r) {
   db.next = Math.max(db.next, ...db.invoices.map(i => (i.no || 0) + 1));
   if (!db.itemsDirty) {
     const ri = (r.items || []).filter(i => i.name);
-    if (ri.length) db.items = ri.map(i => ({ name: i.name, price: i.price, category: i.category || '' }));
+    if (ri.length) {
+      /* الكمية وحد التنبيه تبقى من هذا الجهاز إن لم يرسلها الشيت */
+      const loc = new Map(db.items.map(x => [x.name, x]));
+      const pick = (a, b) => (a !== undefined && a !== null && a !== '') ? num(a) : (b !== undefined ? b : null);
+      db.items = ri.map(i => {
+        const l = loc.get(i.name) || {};
+        return { name: i.name, price: i.price, category: i.category || '', stock: pick(i.stock, l.stock), min: pick(i.min, l.min) };
+      });
+    }
     else if (db.items.length) db.itemsDirty = true;
   }
+}
+function renderWarn() {
+  const w = $('warn'); if (!w) return;
+  let m = '';
+  if (!syncOn()) m = 'الشيت غير مربوط: البيانات على هذا الجوال فقط. ' + (isAdmin() ? 'اربطه من الإعدادات' : 'اطلب من المدير ربطه');
+  else if (syncErr) m = 'تعذرت المزامنة (' + syncErr + '): البيانات محفوظة مؤقتاً وستُرسل للشيت تلقائياً';
+  w.textContent = m; w.hidden = !m;
+}
+/* الحفظ الأساسي في الشيت: نرسل فوراً ونخبر المستخدم بالنتيجة الحقيقية */
+async function pushNow(okMsg) {
+  if (!syncOn()) { toast('الشيت غير مربوط: حُفظ على الجوال فقط'); return; }
+  toast('جارٍ الحفظ في الشيت...');
+  await flush();
+  toast(pendingCount() ? 'لا يوجد اتصال: حُفظ مؤقتاً على الجوال وسيُرسل للشيت تلقائياً' : okMsg);
 }
 function refreshView() {
   $('inv-no').value = db.next;
@@ -920,6 +1103,10 @@ function importData(ev) {
 (async function init() {
   await load(); loadAuth();
   refreshLists(); resetDraft(); renderSync(); syncNow(false);
+  /* إلغاء أي تخزين دون إنترنت قديم */
+  if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {});
+  /* تحديث دوري من الشيت ليرى كل جهاز آخر التغييرات */
+  setInterval(() => { if (!document.hidden) syncNow(false); }, 60000);
   [['g-pw', doLogin], ['g-rk', doRecover], ['g-usr', doSetup]].forEach(([id, fn]) =>
     $(id).addEventListener('keydown', e => { if (e.key === 'Enter') fn(); }));
   let s = null, rm = null;
