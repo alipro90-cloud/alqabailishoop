@@ -60,6 +60,9 @@ nav button.on{color:var(--main);font-weight:700;box-shadow:inset 0 3px 0 var(--m
 /* ---------- زر الأصناف مع السهم ---------- */
 .nmwrap{position:relative}
 .nmwrap input{padding-inline-start:44px}
+.nmwrap.rev input{padding-inline-start:10px;padding-inline-end:44px}
+.nmwrap.rev .arw{inset-inline-start:auto;inset-inline-end:0}
+.nmwrap input::-webkit-calendar-picker-indicator{display:none!important;opacity:0;pointer-events:none}
 .arw{position:absolute;inset-inline-start:0;top:0;height:46px;width:42px;min-height:0;padding:0;background:transparent;
   color:#000;font-size:16px;display:flex;align-items:center;justify-content:center;border-radius:8px}
 .arw span{display:inline-block;transition:transform .2s}
@@ -539,7 +542,7 @@ function tab(t) {
   if (role !== 'admin' && (t === 'items' || t === 'backup')) { toast('هذه الصفحة للمدير فقط'); return; }
   document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === 's-' + t));
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
-  closeNames();
+  closeNames(); closeLineNames();
   if (t === 'list') renderList();
   if (t === 'items') renderItems();
   if (t === 'backup') renderSync();
@@ -552,6 +555,7 @@ function closeNames() {
   $('arw').setAttribute('aria-expanded', 'false');
 }
 function toggleNames() {
+  closeLineNames();
   const p = $('names'), open = p.hidden;
   p.hidden = !open;
   $('arw').setAttribute('aria-expanded', String(open));
@@ -565,7 +569,43 @@ function renderNames() {
       `<button class="nmrow" onclick="goItem(${k})"><span>${esc(it.name)}</span><small>${fmt(it.price)}</small></button>`).join('')
       : '<div class="empty" style="padding:16px">لا توجد أصناف مضافة بعد</div>');
 }
-document.addEventListener('click', e => { if (!e.target.closest('.nmwrap')) closeNames(); });
+document.addEventListener('click', e => {
+  document.querySelectorAll('.names').forEach(p => {
+    if (p.hidden || p.parentElement.contains(e.target)) return;
+    p.hidden = true;
+    const b = p.parentElement.querySelector('.arw'); if (b) b.setAttribute('aria-expanded', 'false');
+  });
+});
+/* السهم داخل خانة الصنف في الفاتورة: عرض الأصناف الموجودة واختيار صنف */
+function closeLineNames(except) {
+  document.querySelectorAll('.lnames').forEach(p => {
+    if (p.id === except) return;
+    p.hidden = true;
+    const b = p.parentElement.querySelector('.arw'); if (b) b.setAttribute('aria-expanded', 'false');
+  });
+}
+function toggleLineNames(i) {
+  const id = 'lnames-' + i, p = $(id), open = p.hidden;
+  closeLineNames(id); closeNames();
+  p.hidden = !open;
+  p.parentElement.querySelector('.arw').setAttribute('aria-expanded', String(open));
+  if (open) renderLineNames(i);
+}
+function renderLineNames(i) {
+  const p = $('lnames-' + i); if (!p || p.hidden) return;
+  const rows = db.items.map((it, k) => ({ it, k })).sort((a, b) => a.it.name.localeCompare(b.it.name, 'ar'));
+  p.innerHTML = `<div class="grp">الأصناف الموجودة (${db.items.length})</div>` +
+    (rows.length ? rows.map(({ it, k }) =>
+      `<button class="nmrow" type="button" onclick="pickItem(${i},${k})"><span>${esc(it.name)}</span><small>${fmt(it.price)}</small></button>`).join('')
+      : '<div class="empty" style="padding:16px">لا توجد أصناف بعد. أضفها من تبويب «الأصناف»</div>');
+}
+function pickItem(i, k) {
+  const it = db.items[k]; if (!it) return;
+  draft[i].name = it.name;
+  draft[i].price = String(it.price);
+  draft[i].unit = lastUnit(it.name) || draft[i].unit;
+  renderLines(); totals();
+}
 /* الانتقال إلى صنف داخل صفحة الأصناف */
 function goItem(k) {
   const it = db.items[k]; if (!it) return;
@@ -654,7 +694,11 @@ function renderLines() {
   $('lines').innerHTML = draft.map((l, i) => `
     <div class="line">
       <label>الصنف</label>
-      <input list="cat" placeholder="اسم الصنف" value="${esc(l.name)}" oninput="setLine(${i},'name',this)" autocomplete="off">
+      <div class="nmwrap rev">
+        <input list="cat" placeholder="اسم الصنف" value="${esc(l.name)}" oninput="setLine(${i},'name',this)" autocomplete="off">
+        <button class="arw" type="button" aria-expanded="false" aria-label="عرض الأصناف الموجودة" onclick="toggleLineNames(${i})"><span>▼</span></button>
+        <div class="names lnames" id="lnames-${i}" hidden></div>
+      </div>
       <div class="row3">
         <div><label>الكمية</label><input inputmode="decimal" value="${esc(l.qty)}" oninput="setLine(${i},'qty',this)"></div>
         <div><label>الوحدة</label><input data-f="unit" list="units" placeholder="قطعة" value="${esc(l.unit)}" oninput="setLine(${i},'unit',this)" autocomplete="off"></div>
