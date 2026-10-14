@@ -96,9 +96,9 @@ nav button.on{color:var(--main);font-weight:700;box-shadow:inset 0 3px 0 var(--m
 body.locked header,body.locked main,body.locked nav,body.locked #modal{display:none!important}
 body:not(.locked) .gate{display:none}
 .is-user .adm{display:none!important}
-.gate{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
-.gate-card{position:relative;z-index:1;background:rgba(248,248,245,.97);border:1.5px solid var(--line);border-radius:14px;padding:22px 18px;width:100%;max-width:380px;box-shadow:0 12px 34px rgba(20,28,32,.28)}
-.gate-art{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.gate{position:fixed;inset:0;z-index:50;background:linear-gradient(180deg,#1d4e5f 0%,#163b49 100%);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.gate-card{position:relative;z-index:1;background:#f8f8f5;border:1.5px solid var(--line);border-radius:14px;padding:22px 18px;width:100%;max-width:380px;box-shadow:0 12px 34px rgba(20,28,32,.28)}
+.gate-art{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.2}
 .gate-shop{text-align:center;font-size:21px;font-weight:700;color:var(--main);padding-bottom:10px;margin-bottom:12px;border-bottom:2px solid var(--main)}
 .gate h2{margin:0 0 12px;font-size:17px;text-align:center}
 .g-err{color:var(--due);font-size:13.5px;min-height:20px;margin:6px 0}
@@ -369,7 +369,7 @@ const NOTE2 = 'ملاحظة البضاعة المباعة لاترد ولا تس
 const ADDR = 'اجدابيا - جزيرة طبرق';
 
 /* إشعار الإيقاف: true = تظهر رسالة بدل المنظومة على أي جهاز، false = تعمل المنظومة كالمعتاد */
-const SOLD_NOTICE = true;
+const SOLD_NOTICE = false;
 /* رقم المصمم أو طريقة التواصل معه (اكتبه هنا ليظهر في الرسالة) */
 const DESIGNER_CONTACT = '';
 
@@ -488,7 +488,8 @@ function showGate(mode) {
   ['g-user', 'g-pw', 'g-rk'].forEach(id => { $(id).value = ''; });
   ['g-pw', 'g-rk'].forEach(id => { $(id).type = 'password'; });
   document.querySelectorAll('.gt').forEach(b => b.textContent = 'إظهار');
-  setTimeout(() => $(mode === 'login' ? 'g-user' : 'g-rk').focus(), 60);
+  $('g-user').value = 'admin';
+  setTimeout(() => $(mode === 'login' ? 'g-pw' : 'g-rk').focus(), 60);
 }
 function gLocked() {
   const w = lockUntil - Date.now();
